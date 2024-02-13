@@ -1,7 +1,6 @@
 
 # 1 解释 
 
-Dockerfile 文件名 D 必须大写 
 
 Dockerfile是用来构建Docker镜像的文本文件，是由一条条构建镜像所需的指令和参数构成的脚本。
 
@@ -13,7 +12,15 @@ Dockerfile是用来构建Docker镜像的文本文件，是由一条条构建镜�
 ·	docker build命令构建镜像
 ·	docker run依镜像运行容器实例
 
-# 2 DockerFile构建过程解析
+# 2 命名
+
+
+一般情况下 Dockerfile 文件名 D 必须大写 , 没有后缀名 , 这种情况 docker build  的 时候 就不用给出 -f 了,  docker 会自动找到这个文件 
+
+其实这个 file 也可以写为其他的名字, 随便大小写, like, dockerfiel-test
+
+
+# 3 DockerFile构建过程解析
 
 Dockerfile内容基础知识
 1：每条保留字指令都必须为大写字母且后面要跟随至少一个参数
@@ -38,10 +45,14 @@ Docker执行Dockerfile的大致流程
 *  Docker容器则可以认为是软件镜像的运行态，也即依照镜像运行的容器实例
 Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及部署与运维，三者缺一不可，合力充当Docker体系的基石。
 
-# 3 DockerFile常用保留字指令
+# 4 DockerFile常用保留字指令
 参考tomcat8的dockerfile入门:   https://github.com/docker-library/tomcat·	
 
+![](image/Pasted%20image%2020240210224654.png)
+
 ![](image/Pasted%20image%2020240208203328.png)
+
+![](image/Pasted%20image%2020240210225106.png)
 
 | x | x |
 | ---- | ---- |
@@ -52,9 +63,9 @@ Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及�
 | WORKDIR | 指定在创建容器后，终端默认登陆的进来工作目录，一个落脚点<br><br>docker run -it -p 8080:8080 \<imageID\> bash<br>以交互打开 docker 容器后, 路径直接变为 Workdir 中给入的值<br><br><br> |
 | USER | 指定该镜像以什么样的用户去执行，如果都不指定，默认是root |
 | ENV | 用来在构建镜像过程中设置环境变量<br><br>ENV MY_PATH /usr/mytest<br>这个环境变量可以在后续的在 dockerfile 中 任何RUN指令中使用，这就如同在命令前面指定了环境变量前缀一样；<br>也可以在其它指令中直接使用这些环境变量，<br>比如：WORKDIR $MY_PATH<br> |
-| ADD | 将宿主机目录下的文件拷贝进镜像, 且会自动处理URL和解压tar压缩包 |
+| ADD | 将宿主机目录下的文件拷贝进镜像, 且会自动处理URL和解压tar压缩包<br><br>ADD可以完全替代COPY的使用场景，但是如果不希望压缩文件自动解压，推荐使用COPY<br><br>add 的源文件可以是Dockerfile所在目录的一个相对路径；也可以是一个 URL；还可以是一个 tar 文件（自动解压为目录） |
 | COPY | <br>类似ADD，拷贝文件和目录到镜像中。 将从构建上下文目录中 <源路径> 的文件/目录复制到新的一层的镜像内的 <目标路径> 位置<br>·	COPY src dest<br>·	COPY ["src", "dest"]<br>·	<src源路径>：源文件或者源目录<br>·	<dest目标路径>：容器内的指定路径，该路径不用事先建好，路径不存在的话，会自动创建。<br><br> |
-| VOLUME | 容器数据卷，用于数据保存和持久化工作 |
+| VOLUME | 容器数据卷，用于数据保存和持久化工作<br><br>VOLUME ["volume1", "volume2"]<br>如果 之前 volume1 和 volume2 没有已经创建好, 则随着 image 的container 被生成, 会生成随机目录 volume01, volume02 <br><br>![](image/Pasted%20image%2020240210142851.png)<br><br>用  docker inspect `<containerID or name>` 查看 挂载的信息, 可以看出来  挂载的 容器外的目录的 的路径  , 他为 匿名目录 ,  目录的名字都是随机生成的 <br>![](image/Pasted%20image%2020240210143119.png)<br><br> |
 | CMD | 指定容器启动后的要干的事情<br><br>![](image/Pasted%20image%2020240208203748.png)<br><br>注意 Dockerfile 中可以有多个 CMD 指令，但只有最后一个生效，之前那些都不会被执行 <br>CMD 会被 docker run 之后的参数替换<br><br><br>它和前面RUN命令的区别<br>CMD是在docker run 时运行。<br>RUN是在 docker build时运行。<br><br>docker run -it xxx bin/bash <br>相当于 在 dockerfile 的最后一行 加上了 `CMD["bin/bash", "run"]`. 所以原本在 dockerfile 中定义的 最后一行的cmd 不会被执行了. <br><br> |
 | ENTRYPOINT | 在执行 docker build 的时候,  ENTRYPOINT中的内容会被自动执行 <br><br>也是用来指定一个容器启动时要运行的命令<br><br>![](image/Pasted%20image%2020240208204150.png)<br><br>![](image/Pasted%20image%2020240209105440.png)<br>上面相当于执行 java -jar zzyy_docker.jar <br><br>类似于 CMD 指令，但是ENTRYPOINT不会被docker run后面的命令覆盖， 而且这些命令行参数会被当作参数送给 ENTRYPOINT 指令指定的程序<br><br>在执行 docker run 的时候 可以指定 ENTRYPOINT 运行所需要的参数. <br>如果dockerfile 中 存在 多个 ENTRYPOint 指令, 仅最后一个生效<br><br>![](image/Pasted%20image%2020240208221209.png)<br><br><br>ENTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参。<br><br>当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成  `<ENTRYPOINT> <CMD>`<br> |
 |  |  |
@@ -65,7 +76,7 @@ Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及�
 我们演示自己的覆盖操作
 ![](image/Pasted%20image%2020240208203904.png)
 
-## 3.1 ENTRYPOINT 命令格式和案例说明
+## 4.1 ENTRYPOINT  和 CMD 的不同
 
 
 ![](image/Pasted%20image%2020240208204150.png)
@@ -74,6 +85,9 @@ ENTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 C
 
 当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成  `<ENTRYPOINT> <CMD>`
 ![](image/Pasted%20image%2020240208204204.png)
+
+CMD写ls -a，docker run ls -l会按照ls -l执行，entrypoint写ls -a,docker run ls -l 会按照ls -al执行
+
 
 案例如下：假设已通过 Dockerfile 构建了 nginx:test 镜像：
 ![](image/Pasted%20image%2020240208204213.png)
@@ -87,7 +101,35 @@ ENTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 C
 优点: 在执行docker run的时候可以指定 ENTRYPOINT 运行所需的参数。
 注意:  如果 Dockerfile 中如果存在多个 ENTRYPOINT 指令，仅最后一个生效。
 
-# 4 虚悬镜像
+## 4.2 
+
+cmd 的用法
+![](image/Pasted%20image%2020240210230904.png)
+
+如果这个时候 运行 docker run ddxxxx -l, 则 dockerfile 中的 `CMD ["ls", "-a"]`  会被 -l 替换掉.  但是 有没有 -l 这样的命令, 所以会报错 
+
+![](image/Pasted%20image%2020240210231432.png)
+
+
+如果这个时候 运行 docker run ddxxxx ls -al, 则 dockerfile 中的 `CMD ["ls", "-a"]`  会被 ls -al替换掉.  但是不会报错, 因为有 ls -al 这样的命令  
+
+![](image/Pasted%20image%2020240210231611.png)
+
+
+----
+
+ENTRYPOINT的用法 
+
+![](image/Pasted%20image%2020240210231726.png)
+![](image/Pasted%20image%2020240210231802.png)
+
+追加的命令 是直接拼接在 ENTRYPOINT 给出的 命令的后面的
+
+
+执行 docker run xxx -l, 就变成运行 docker run xxx ls -al 了 , 不会报错了 
+![](image/Pasted%20image%2020240210232020.png)
+
+# 5 虚悬镜像
 
 仓库名、标签都是`<none>`的镜像，俗称dangling image
 
@@ -122,9 +164,32 @@ docker image prune -a清理无容器使用的镜像
 
 ![](image/Pasted%20image%2020240208211255.png)
 
-# 5 例子
+# 6 docker build 去使用 dockerfile
 
-## 5.1 自定义镜像mycentosjava8
+例子: docker build -f Dockerfile-el8 -t rpm-builder-8:2.2 . 
+
+上面代码中，-t参数用来指定 image 文件的名字，后面还可以用冒号指定标签。如果不指定，默认的标签就是latest。
+ 最后的那个点表示 Dockerfile 文件所在的路径，上例是当前路径，所以是一个点。
+
+生成的 image 就放在了当前目录下 
+
+
+| .<br><br>Build with PATH | docker build .<br><br>将当前目录的所有文件 都 打包这个 一个 docker image<br><br>This example specifies that the PATH is ., and so all the files in the local directory get tard and sent to the Docker daemon.<br><br>The PATH specifies where to find the files for the “context” of the build on the Docker daemon.<br><br>Remember that the daemon could be running on a remote machine and that no parsing of the Dockerfile happens at the client side (where you’re running docker build). That means that all the files at PATH get sent, not just the ones listed to ADD in the Dockerfile. |
+| ---- | ---- |
+| Tag an image (-t, --tag) | 给这个 生成的 image 起名为 rpm-builder-8<br><br> docker build -t vieux/apache:2.0 .<br><br>->  The repository name will be vieux/apache and the tag will be 2.0. |
+| Specify a Dockerfile (-f, --file) | 使用 那个 dockerfile |
+
+
+# 7 docker history imageid
+
+这个 image 的构建过程
+
+![](image/Pasted%20image%2020240210230411.png)
+
+# 8 例子
+
+
+## 8.1 自定义镜像mycentosjava8
 
 要求: Centos7镜像具备vim+ifconfig+jdk8
 
@@ -193,7 +258,7 @@ UnionFS（联合文件系统）：Union文件系统（UnionFS）是一种分层�
 
 
 
-## 5.2 自定义镜像myubuntu
+## 8.2 自定义镜像myubuntu
 准备编写DockerFile文件
 
 ```
@@ -221,7 +286,7 @@ CMD /bin/bash
 
 
 
-## 5.3 jar 包 和 java 环境打包在一起 
+## 8.3 jar 包 和 java 环境打包在一起 
 
 
 ```
@@ -253,3 +318,10 @@ docker build -t zzyy_docker:1.6 .
 
 运行容器
 docker run -d -p 6001:6001 zzyy_docker:1.6
+
+
+## 8.4 tomcat 镜像
+
+![](image/Pasted%20image%2020240210234023.png)
+
+
