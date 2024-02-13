@@ -7,7 +7,23 @@ docker 网络到底能干什么
 
 指定不同的容器 跑在 指定的 网络里面 
 
-# 1 Docker网络
+
+# 1 一些辅助命令 
+
+1  ip addr 查看 容器内的网络设置 
+docker exec -it tomcat01 ip addr, 不用打开 bash shell, 直接在容器内运行 ip addr 
+![](image/Pasted%20image%2020240213152733.png)
+
+2 docker exec -it tomcat02 ping tomcat01
+容器之间ping
+
+3  docker exec -it tomcat02 cat /etc/hosts
+
+4 docker run --net 或者 --network
+
+
+
+# 2 Docker网络
 
 1 docker不启动，默认网络情况
 有三个 
@@ -24,7 +40,9 @@ yum remove libvirt-libs.x86_64
 
 
 2 docker 启动后 的网络情况 
+我们每启动一个docker容器, docker就会给docker容器分配一个ip, 我们只要安装了docker, 就会有一个网卡docker0
 会产生一个名为docker0的虚拟网桥
+桥接模式, 就是evth-pair技术 
 使用 docker0 : 172.17.0.1 通过 这个网桥 使得 docker 和宿主机联系, 已经 docker 容器之间的相互联系. 
 
 
@@ -36,14 +54,16 @@ yum remove libvirt-libs.x86_64
 
 
 
-# 2 网络模式
+# 3 网络模式
 
 ![](image/Pasted%20image%2020240209113506.png)
 
 ·	bridge模式：使用--network  bridge指定，默认使用docker0
 ·	host模式：使用--network host指定
 ·	none模式：使用--network none指定
-·	container模式：使用--network container:NAME或者容器ID指定    . 使用另一个容器的 ip 地址 
+·	container模式：使用--network container:NAME或者容器ID指定    . 使用另一个容器的 ip 地址 (用的少 局限很大)
+
+----
 
 
 ==docker容器内部的ip是有可能会发生改变的==
@@ -58,8 +78,11 @@ yum remove libvirt-libs.x86_64
 ![](image/Pasted%20image%2020240209125748.png)
 
 
-## 2.1 bridge
+## 3.1 bridge (veth-pair技术)
 
+<mark>docker0 的问题: 默认 不支持容器名连接访问. 使用 --link 可以打通连接</mark>
+
+我们每启动一个docker容器, docker就会给docker容器分配一个ip, 我们只要安装了docker, 就会有一个网卡docker0
 Docker 服务默认会创建一个 docker0 网桥（其上有一个 docker0 内部接口），该桥接网络的名称为docker0，它在内核层连通了其他的物理或虚拟网卡，==这就将所有容器和本地主机都放到同一个物理网络==, 在同一个网段的话 相互之间就可以自由通信了。Docker 默认指定了 docker0 接口 的 IP 地址和子网掩码，让主机和容器之间可以通过网桥相互通信。
  
 查看 bridge 网络的详细信息，并通过 grep 获取名称项
@@ -68,6 +91,8 @@ docker network inspect bridge | grep name
 
 ifconfig
 ![](image/Pasted%20image%2020240209125944.png)
+
+![](image/Pasted%20image%2020240213160224.png)
 
 1 Docker使用Linux桥接，在宿主机虚拟一个Docker容器网桥(docker0)，Docker启动一个容器时会根据Docker网桥的网段分配给容器一个IP地址，称为Container-IP，同时Docker网桥是每个容器的默认网关。因为在同一宿主机内的容器都接入同一个网桥，这样容器之间就能够通过容器的Container-IP直接通信。
  
@@ -78,6 +103,14 @@ ifconfig
    3.2 每个容器实例内部也有一块网卡 (估计是虚拟出的网卡)，每个接口叫eth0；
    3.3 docker0上面的每个veth匹配某个容器实例内部的eth0，两两配对，一一匹配。
 
+> evth-pair 就是一堆虚拟设备接口, 他们都是承兑出现的, 一段连着协议, 一段彼此相连. evth-pair 充当桥梁 , 连接各种虚拟网络设备 
+
+4 所有容器在不制定网络的情况下, 都是由 docker0路由的, docker 会给容器自动分配一个默认可用的ip 
+
+5 contianer 之间 不是直接联系, 而是要通过 docker0 联系 
+
+6 只要容器已删除, 这个网桥对 就没有 
+
  通过上述，将宿主机上的所有容器都连接到这个内部网络上，两个容器在同一个网络下,会从这个网关下各自拿到分配的ip，此时两个容器的网络是互通的。
 ![](image/Pasted%20image%2020240209130420.png)
 
@@ -86,6 +119,12 @@ ens33 是本机的网卡
 个人理解,大家仔细看会发现桥接连接的是容器和主机的网卡,而网卡内部是有ip地址,主机利用桥接提供的容器ip访问容器,容器利用桥接的主机ip访问主机,达到主机和容器的通信
 docker0相当于是一个交换机，每个容器就是一台装了linux操作系统的主机
 
+
+![](image/Pasted%20image%2020240213154359.png)
+
+
+
+![](image/Pasted%20image%2020240213155059.png)
 ---	
 验证两两匹配
 docker run -d -p 8081:8080   --name tomcat81 billygoo/tomcat8-jdk8
@@ -99,7 +138,7 @@ docker run -d -p 8082:8080   --name tomcat82 billygoo/tomcat8-jdk8
 ![](image/Pasted%20image%2020240209140723.png)
 
 
-## 2.2 host
+## 3.2 host
 
 直接使用宿主机的 IP 地址与外界进行通信，不再需要额外进行NAT 转换。
 
@@ -137,13 +176,12 @@ http://宿主机IP:8080/    相当于在住加上装了 tomcat
 在CentOS里面用默认的火狐浏览器访问容器内的tomcat83看到访问成功，因为此时容器的IP借用主机的，
 所以容器共享宿主机网络IP，这样的好处是外部主机与容器可以直接通信。
 
-## 2.3 none
+## 3.3 none
 
 在none模式下，并不为Docker容器进行任何网络配置。 没有 网卡 等信息 
 也就是说，这个Docker容器没有网卡、IP、路由等信息，只有一个lo, localhost  表示为本地回环 
 需要我们自己为Docker容器添加网卡、配置IP等。
 ·	禁用网络功能，只有lo标识(就是127.0.0.1表示本地回环)
-
 
 driver: null , 就是根本没有任何的网络
 
@@ -162,7 +200,7 @@ docker run -d -p 8084:8080 --network none --name tomcat84 billygoo/tomcat8-jdk8
 在容器外部查看
 ![](image/Pasted%20image%2020240209142157.png)
 
-## 2.4 container 
+## 3.4 container 
 
 container⽹络模式 
 新建的容器和已经存在的一个容器共享一个网络ip配置而不是和宿主机共享。新创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP、端口范围等。同样，两个容器除了网络方面，其他的如文件系统、进程列表等还是隔离的。
@@ -204,13 +242,41 @@ Alpine Linux 是一款独立的、非商业的通用 Linux 发行版，专为追
 15: eth0@if16: 消失了。。。。。。关闭alpine1，再看看alpine2
 ![](image/Pasted%20image%2020240209142926.png)
 
+# 4 容器互联 --link
+--link就是在hosts文件内加了一行解析
+已经不推荐使用了 
+
+docker run -d -P --name tomcat03 --link tomcat02 tomcat
+docker exec -it tomcat03 ping tomcat02, 可以ping通
+
+![](image/Pasted%20image%2020240213155953.png)
+
+但是 反向ping 无法ping通, 因为没有配置 
+docker exec -it tomcat02 ping tomcat03 返回无法ping 
+
+查看 host docker exec -it tomcat03 cat /etc/hosts
+![](image/Pasted%20image%2020240213161250.png)
 
 
-# 3 自定义网络 docker network create xx
+
+# 5 自定义网络 
 
 ![](image/Pasted%20image%2020240209143743.png)
 
-## 3.1 不定义自定义网络
+自定义的网络, 支持 ping hostname 和 ip了
+docker0 的话, 只支持 ping ip, 不支持ping hostname
+
+## 5.1 如何定义一个网络 docker network create xx
+
+```
+docker network create --driver bridge --subnet 192.168.0.0/16 --gatewat 192.168.0.0 mynet 
+```
+
+![](image/Pasted%20image%2020240213163548.png)
+
+![](image/Pasted%20image%2020240213163918.png)
+
+## 5.2 不定义自定义网络
 
 例子1 
 
@@ -230,9 +296,9 @@ Alpine Linux 是一款独立的、非商业的通用 Linux 发行版，专为追
 
 ![](image/Pasted%20image%2020240209144405.png)
 
-## 3.2 定义自定义网路后
+## 5.3 使用自定义网路
 
-自定义桥接网络,自定义网络默认使用的是桥接网络bridge
+自定义桥接网络, 自定义网络默认使用的是桥接网络bridge
 
 新建自定义网络
 ![](image/Pasted%20image%2020240209144455.png)
@@ -249,7 +315,36 @@ Alpine Linux 是一款独立的、非商业的通用 Linux 发行版，专为追
 问题结论
 ·	自定义网络本身就维护好了主机名和ip的对应关系（ip和域名都能通）
 
-# 4 Docker平台架构图解
+
+# 6 不同网段互联 docker network connect 
+
+
+connect事实上就是写了一个路由条目，写完之后，可以在linux路由表里应该查得到
+docker network connect mynet tomcat01, 将mynet 这个网络和 tomcat01 这个 容器 联通 
+连通之后 就是将 tomcat01 放到了 mynet 网络下
+实质就是 一个容器 两个ip地址, 一个公网ip 一个 私网ip 
+
+
+---
+
+之间连不同网段 之前的容器 是不可能的 
+![](image/Pasted%20image%2020240213165319.png)
+
+
+解决方式: 
+docker network connect 
+![](image/Pasted%20image%2020240213165441.png)
+
+![](image/Pasted%20image%2020240213165514.png)
+
+docker network connect mynet tomcat01, 将mynet 这个网络和 tomcat01 这个 容器 联通 
+连通之后 就是将 tomcat01 放到了 mynet 网络下
+
+docker network inspect mynet 
+![](image/Pasted%20image%2020240213170020.png)
+
+
+# 7 Docker平台架构图解
 
 整体说明
 从其架构和运行流程来看，Docker 是一个 C/S 模式的架构，后端是一个松耦合架构，众多模块各司其职。 
@@ -265,3 +360,6 @@ Docker 运行的基本流程为：
 
 
 ![](image/Pasted%20image%2020240209144642.png)
+
+
+ 

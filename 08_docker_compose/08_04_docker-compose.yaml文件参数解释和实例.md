@@ -1,7 +1,21 @@
 
-# 1 例子1
+# 1 参数解释 
 
-## 1.1 编写Dockerfile
+```
+version compose 文件格式的版本，恒定为 2.1
+services 标签下可以定义多个类似 nginx 这样的服务
+container_name 服务定义， nginx_test 是容器的名称
+image nginx容器所使用的镜像
+ports 定义端口映射，本例将容器内的 80 端口映射到宿主机的 8080 端口
+volumes 定义目录映射，本例将容器内的 /opt/nginx/html 目录映射到宿主机的 /opt/nginx 目录
+
+networks 定义容器网络，host1-network 为定义的网络名称，
+    config 网络配置，subnet 代表网段，gateway 代表网关。
+```
+
+# 2 例子1
+
+## 2.1 编写Dockerfile
 ·	mvn package命令将微服务形成新的jar包 并上传到Linux服务器/mydocker目录下
 
 ```
@@ -20,7 +34,7 @@ ENTRYPOINT ["java","-jar","/zzyy_docker.jar"]
 EXPOSE 6001
 ```
 
-## 1.2 不用 compose 
+## 2.2 不用 compose 
 
 1 ·	新建mysql容器实例
 
@@ -65,7 +79,7 @@ docker run  -p 6379:6379 --name redis608 --privileged=true -v /app/redis/redis.c
 ·	多个run命令......
 ·	容器间的启停或宕机，有可能导致IP地址对应的容器实例变化，映射出错， 要么生产IP写死(可以但是不推荐)，要么通过服务调用
 
-## 1.3 用 compose 
+## 2.3 用 compose 
 
 编写docker-compose.yml文件
 
@@ -124,6 +138,71 @@ networks:
  redis 和 mysql 两个 services 中 没有指定  container name, 生成的 container name 一个为 mydocker_redis_1 , 另一个为 mydocker_mysql_1
 
 
+# 3 例子2 
+
+```
+version: '2.1'
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx_test
+    ports:
+      - 8080:80
+    volumes:
+      - /opt/nginx:/opt/nginx/html
+```
 
 
 
+
+version compose 文件格式的版本，恒定为 2.1
+services 标签下可以定义多个类似 nginx 这样的服务
+container_name 服务定义， nginx_test 是容器的名称
+image nginx容器所使用的镜像
+ports 定义端口映射，本例将容器内的 80 端口映射到宿主机的 8080 端口
+volumes 定义目录映射，本例将容器内的 /opt/nginx/html 目录映射到宿主机的 /opt/nginx 目录
+
+
+## 3.1 例子: 使用 docker-compose 启动 Nginx 和 Redis 两个容器：
+
+
+```
+version: '2.1'
+services:
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_host1
+    ports:
+      - 8081:80
+    volumes:
+      - /opt/nginx:/opt/nginx/html
+    networks:
+      - host1-network
+
+  redis:
+    image: redis:latest
+    container_name: redis_host1
+    ports:
+      - 63790:6379
+    networks:
+      - host1-network
+
+networks:
+  host1-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.11.0/24
+          gateway: 192.168.11.254
+          
+```
+
+参数：
+networks 定义容器网络，host1-network 为定义的网络名称，
+Config 网络配置，subnet 代表网段，gateway 代表网关。
+
+
+上图可见，nginx_host1 的 IP 为：192.168.11.2 ,符合 docker-compose 中定义的 192.168.11.0/24 网段；
+如果访问 Redis 可以直接使用docker-compose 定义的 redis_host1 容器名访问即可。
