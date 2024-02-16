@@ -62,6 +62,10 @@ yum remove libvirt-libs.x86_64
 ·	host模式：使用--network host指定
 ·	none模式：使用--network none指定
 ·	container模式：使用--network container:NAME或者容器ID指定    . 使用另一个容器的 ip 地址 (用的少 局限很大)
+	overlay：覆盖网络。可以将多个Docker守护进程连接，实现跨主机容器通讯（swarm集群）。
+	macvlan：将MAC地址分配给容器，使容器作为网络上的物理设备。不通过Docker主机网络栈进行路由，直接通过MAC地址路由到容器。
+	自定义网络：自己设置网关，每个容器的ip
+	网络插件：可以通过Docker安装和使用第三方网络插件。
 
 ----
 
@@ -79,6 +83,8 @@ yum remove libvirt-libs.x86_64
 
 
 ## 3.1 bridge (veth-pair技术)
+
+bridge模式是Docker默认的网络设置，此模式会为每一个容器分配IP等，并将一个主机上的Docker容器连接到一个虚拟网桥上。当Docker server启动时，会在主机上创建一个名为docker0的虚拟网桥，此主机上启动的Docker容器会连接到这个虚拟网桥上。虚拟网桥的工作方式和物理交换机类似，这样主机上的所有容器就通过交换机连在了一个二层网络中。接下来就要为容器分配IP了，Docker选择一个和宿主机不同的IP地址和子网分配给docker0，连接到docker0的容器就从这个子网中选择一个未占用的IP使用。如一般Docker会使用172.17.0.0/16这个网段，并将172.17.0.1/16分配给docker0网桥（在主机上使用ip addr命令是可以看到docker0，在宿主机上作为一块虚拟网卡使用）。
 
 <mark>docker0 的问题: 默认 不支持容器名连接访问. 使用 --link 可以打通连接</mark>
 
@@ -139,13 +145,18 @@ docker run -d -p 8082:8080   --name tomcat82 billygoo/tomcat8-jdk8
 
 
 ## 3.2 host
-
+如果启动容器的时候使用host模式，是和宿主机共用一个网络。容器将不会虚拟出自己的网卡，配置自己的IP等，而是使用宿主机的IP和端口。 
 直接使用宿主机的 IP 地址与外界进行通信，不再需要额外进行NAT 转换。
 
 容器将不会获得一个独立的Network Namespace， 而是和宿主机共用一个Network Namespace。容器将不会虚拟出自己的网卡而是使用宿主机的IP和端口。
 
 ![](image/Pasted%20image%2020240209141124.png)
 
+---
+
+使用host模式启动容器后可以发现，使用ip addr查看网络环境时，看到的都是宿主机上的信息。这种方式创建出来的容器，可以看到host上的所有网络设备。 
+容器中，对这些设备有全部的访问权限。因此docker提示我们，这种方式是不安全的。如果在隔离良好的环境中（比如租户的虚拟机中）使用这种方式，问题不大。 
+![](image/Pasted%20image%2020240215212224.png)
 
 ----
 例子
@@ -177,6 +188,7 @@ http://宿主机IP:8080/    相当于在住加上装了 tomcat
 所以容器共享宿主机网络IP，这样的好处是外部主机与容器可以直接通信。
 
 ## 3.3 none
+在none模式下，Docker容器拥有自己的Network Namespace，但是，并不为Docker容器进行任何网络配置。也就是说，这个Docker
 
 在none模式下，并不为Docker容器进行任何网络配置。 没有 网卡 等信息 
 也就是说，这个Docker容器没有网卡、IP、路由等信息，只有一个lo, localhost  表示为本地回环 
@@ -268,11 +280,15 @@ docker0 的话, 只支持 ping ip, 不支持ping hostname
 
 ## 5.1 如何定义一个网络 docker network create xx
 
+基于bridge创建自定义网络，子网配置192.168.0.0/16，网关192.168.0.1，自定义网络名称 mynet
+
 ```
 docker network create --driver bridge --subnet 192.168.0.0/16 --gatewat 192.168.0.0 mynet 
 ```
 
 ![](image/Pasted%20image%2020240213163548.png)
+
+更详细的查看： docker network inspect mynet
 
 ![](image/Pasted%20image%2020240213163918.png)
 
