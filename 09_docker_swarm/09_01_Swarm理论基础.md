@@ -10,6 +10,9 @@ Docker Swarm is built into the Docker Engine. Do not Docker Swarm mod with Docke
 
 节点和服务
 
+一个虚拟机上 可以有多个 docker node . 但是 一个虚拟机上只有有一个激活状态的node
+一个 node 上可以跑多个任务
+
 ![](image/Pasted%20image%2020240213180311.png)
 
 Worker 去 实际做工作的 

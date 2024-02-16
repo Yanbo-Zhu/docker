@@ -12,12 +12,11 @@
 ![](image/Pasted%20image%2020240216000007.png)
 
 
-# 2 新节点要加入 swarm cluster 的时候 的流程 
+## 1.1 新节点要加入 swarm cluster 的时候 的流程 
 
 ![](image/Pasted%20image%2020240216000606.png)
 
-
-# 3 两个 worker node 之间的通信 
+## 1.2 两个 worker node 之间的通信 
 
 ![](image/Pasted%20image%2020240216001009.png)
 
@@ -25,3 +24,27 @@
 docker node instapct nodeID 得到 TLS 整数的的信息
 
 ![](image/Pasted%20image%2020240216000928.png)
+
+
+# 2 CA数字证书轮换 
+
+## 2.1 轮换周期
+![](image/Pasted%20image%2020240216121942.png)
+
+docker swarm update --cert-expiry 
+默认为 90天
+![](image/Pasted%20image%2020240216122013.png)
+
+## 2.2 docker swarm ca 
+
+![](image/Pasted%20image%2020240216122108.png)
+
+
+docker swarm ca --rotate
+![](image/Pasted%20image%2020240216122356.png)
+
+
+
+
+
+
