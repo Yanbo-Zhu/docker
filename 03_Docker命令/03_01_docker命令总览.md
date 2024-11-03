@@ -379,7 +379,7 @@ kuangshen/bim:1.0, 找 image 的1.0 version
 也即启动交互式容器(前台有伪终端，等待交互)；
 -P: 随机端口映射，大写P
 ![](image/Pasted%20image%2020240208142200.png)
-外部的主机port 32768 映射到 docker 的端口 32768 , 就是说 如果要从外部访问, 就放到 32768 等于访问 8080
+外部的主机port 32768 映射到 docker 的端口 8080 , 就是说 如果要从外部访问, 就放到 32768 等于访问 8080
 
 --publish , -p	 : 指定端口映射，小写p
 docker run -p 18004:80   (80 是在 dockerfile 中定义的 port)  
