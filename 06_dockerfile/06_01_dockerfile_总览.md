@@ -108,8 +108,10 @@ The `CMD ["pipenv", "run", "python", "main.py"]` command is typically found in a
 
 ## 4.2 ENTRYPOINT  和 CMD 的不同
 
-cmd给出的是一个容器的默认的可执行体。也就是容器启动以后，默认的执行的命令。其执行条件：
-（1）docker run没有指定任何的执行命令或者（2）dockerfile里面也没有entrypoint
+cmd给出的是一个容器的默认的可执行体。也就是容器启动以后，默认的执行的命令。
+其执行条件：
+（1）docker run没有指定任何的执行命令或者
+（2）dockerfile里面也没有entrypoint
 才会使用CMD内命令执行。entrypoint才是正统地用于定义容器启动以后的执行体的，其实我们从名字也可以理解，这个是容器的“入口”
 
 
@@ -117,10 +119,10 @@ cmd给出的是一个容器的默认的可执行体。也就是容器启动以�
 
 ENTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参。
 
-当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成  `<ENTRYPOINT> <CMD>`
+==当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成  `<ENTRYPOINT> <CMD>`==
 ![](image/Pasted%20image%2020240208204204.png)
 
-CMD写ls -a，docker run ls -l会按照ls -l执行，entrypoint写ls -a,docker run ls -l 会按照ls -al执行
+CMD写ls -a，docker run ls -l会按照ls -l执行，entrypoint写ls -a,   docker run ls -l 会按照ls -al执行
 
 
 案例如下：假设已通过 Dockerfile 构建了 nginx:test 镜像：
@@ -138,9 +140,10 @@ CMD写ls -a，docker run ls -l会按照ls -l执行，entrypoint写ls -a,docker r
 ## 4.3 
 
 cmd 的用法
+
 ![](image/Pasted%20image%2020240210230904.png)
 
-如果这个时候 运行 docker run ddxxxx -l, 则 dockerfile 中的 `CMD ["ls", "-a"]`  会被 -l 替换掉.  但是 有没有 -l 这样的命令, 所以会报错 
+如果这个时候 运行 docker run `<imagename>` -l, 则 dockerfile 中的 `CMD ["ls", "-a"]`  会被 -l 替换掉.  但是 有没有 -l 这样的命令, 所以会报错 
 
 ![](image/Pasted%20image%2020240210231432.png)
 
