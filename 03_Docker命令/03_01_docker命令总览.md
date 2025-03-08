@@ -148,6 +148,7 @@ Remove all unused containers, networks, images (both dangling and unused), and o
 ![](image/Pasted%20image%2020240208105926.png)
 
 
+
 ## 4.1 Docker network create 
 
 在安装Docker Engine时会自动创建一个默认的bridge网络docker0。

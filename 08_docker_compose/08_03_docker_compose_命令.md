@@ -5,7 +5,9 @@ docker-compose build    # `docker-compose build` will read your `docker-compose.
 
 docker-compose up                           # 启动所有docker-compose服务
 docker-compose up -d                        # 启动所有docker-compose服务并后台运行, 需要在 docker-compose.yaml 同步目录下执行
--f 指定 docker-compose 文件位置 docker-compose -f /root/docker-compose/docker-compose.yml up -d
+
+- **`-d`（detached mode）**：让容器在后台运行，这样终端不会被占用，你可以继续执行其他命令。
+- -f 指定 docker-compose 文件位置 docker-compose -f /root/docker-compose/docker-compose.yml up -d
 
 docker-compose down                         # 停止并删除容器、网络、卷、镜像。
 docker-compose exec  yml里面的服务id                 # 进入容器实例内部  docker-compose exec docker-compose.yml文件中写的服务id /bin/bash
