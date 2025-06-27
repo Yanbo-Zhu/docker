@@ -44,6 +44,7 @@ docker run -p 3306:3306 --name mysql57 --privileged=true -v /zzyyuse/mysql/conf:
 ```
 2 ·	进入mysql容器实例并新建库db2021+新建表t_user
 
+```
 docker exec -it mysql57 /bin/bash
 mysql -uroot -p
 create database db2021;
@@ -58,10 +59,12 @@ CREATE TABLE `t_user` (
   `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`)
 ) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+```
 
 3 单独的redis容器实例
  
 docker run  -p 6379:6379 --name redis608 --privileged=true -v /app/redis/redis.conf:/etc/redis/redis.conf -v /app/redis/data:/data -d redis:6.0.8 redis-server /etc/redis/redis.conf
+
 
 4 微服务工程
  docker run -d -p 6001:6001 zzyy_docker:1.6
@@ -151,8 +154,6 @@ services:
     volumes:
       - /opt/nginx:/opt/nginx/html
 ```
-
-
 
 
 version compose 文件格式的版本，恒定为 2.1
