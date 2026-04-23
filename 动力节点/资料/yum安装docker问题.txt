@@ -1,0 +1,20 @@
+不能启动docker 服务
+修改 /etc/sysconfig/docker文件
+原来：OPTIONS='--selinux-enabled --log-driver=journald --signature-verification=false'
+改为： OPTIONS='--selinux-enabled=false --log-driver=journald --signature-verification=false'
+
+修改：  --selinux-enabled=false 
+
+保存文件，在启动docker 服务
+systemctl start docker  启动服务（不是开机自启)
+systemctl enable docker 开启启动服务
+===================================================================================
+问题：
+tarting container process caused "process_linux.go:259: applying cgroup configuration for process caused \"Cannot set property TasksAccounting, or unknown property.\""
+
+解决
+停止docker 服务 systemctl stop docker
+更新  yum  update systemd
+重启服务  systemctl start docker 
+
+

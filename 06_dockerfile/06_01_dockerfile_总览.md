@@ -54,21 +54,22 @@ Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及�
 
 ![](image/Pasted%20image%2020240210225106.png)
 
-| x | x |
-| ---- | ---- |
-| FROM | 基础镜像，当前新镜像是基于哪个镜像的，指定一个已经存在的镜像作为模板，第一条必须是from<br><br>继承的镜像 不要处于运行状态 <br>FORM 的 image , 最好在本机中已经存在了 <br> |
-| MAINTAINER | 镜像维护者的姓名和邮箱地址 |
-| RUN | 容器构建时需要运行的命令 <br>RUN是在 docker build时运行<br><br>两种格式<br><br>shell格式<br>RUN yum -y install vim<br>![](image/Pasted%20image%2020240208203143.png)<br>exec格式<br>![](image/Pasted%20image%2020240208203248.png)<br> |
-| EXPOSE | 当前容器对外暴露出的端口 |
-| WORKDIR | 指定在创建容器后，终端默认登陆的进来工作目录，一个落脚点<br><br>docker run -it -p 8080:8080 \<imageID\> bash<br>以交互打开 docker 容器后, 路径直接变为 Workdir 中给入的值<br><br><br> |
-| USER | 指定该镜像以什么样的用户去执行，如果都不指定，默认是root |
-| ENV | 用来在构建镜像过程中设置环境变量<br><br>ENV MY_PATH /usr/mytest<br>这个环境变量可以在后续的在 dockerfile 中 任何RUN指令中使用，这就如同在命令前面指定了环境变量前缀一样；<br>也可以在其它指令中直接使用这些环境变量，<br>比如：WORKDIR $MY_PATH<br> |
-| ADD | 将宿主机目录下的文件拷贝进镜像, 且会自动处理URL和解压tar压缩包<br><br>ADD可以完全替代COPY的使用场景，但是如果不希望压缩文件自动解压，推荐使用COPY<br><br>add 的源文件可以是Dockerfile所在目录的一个相对路径；也可以是一个 URL；还可以是一个 tar 文件（自动解压为目录） |
-| COPY | <br>类似ADD，拷贝文件和目录到镜像中。 将从构建上下文目录中 <源路径> 的文件/目录复制到新的一层的镜像内的 <目标路径> 位置<br>·	COPY src dest<br>·	COPY ["src", "dest"]<br>·	<src源路径>：源文件或者源目录<br>·	<dest目标路径>：容器内的指定路径，该路径不用事先建好，路径不存在的话，会自动创建。<br><br> |
-| VOLUME | 容器数据卷，用于数据保存和持久化工作<br><br>VOLUME ["volume1", "volume2"]<br>如果 之前 volume1 和 volume2 没有已经创建好, 则随着 image 的container 被生成, 会生成随机目录 volume01, volume02 <br><br>![](image/Pasted%20image%2020240210142851.png)<br><br>用  docker inspect `<containerID or name>` 查看 挂载的信息, 可以看出来  挂载的 容器外的目录的 的路径  , 他为 匿名目录 ,  目录的名字都是随机生成的 <br>![](image/Pasted%20image%2020240210143119.png)<br><br> |
-| CMD | 指定容器启动后的要干的事情<br><br>![](image/Pasted%20image%2020240208203748.png)<br><br>注意 Dockerfile 中可以有多个 CMD 指令，但只有最后一个生效，之前那些都不会被执行 <br>CMD 会被 docker run 之后的参数替换<br><br><br>它和前面RUN命令的区别<br>CMD是在docker run 时运行。<br>RUN是在 docker build时运行。<br><br>docker run -it xxx bin/bash <br>相当于 在 dockerfile 的最后一行 加上了 `CMD["bin/bash", "run"]`. 所以原本在 dockerfile 中定义的 最后一行的cmd 不会被执行了. <br><br> |
+| x          | x                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FROM       | 基础镜像，当前新镜像是基于哪个镜像的，指定一个已经存在的镜像作为模板，第一条必须是from<br><br>继承的镜像 不要处于运行状态 <br>FORM 的 image , 最好在本机中已经存在了 <br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| MAINTAINER | 镜像维护者的姓名和邮箱地址                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| RUN        | 容器构建时需要运行的命令 <br>RUN是在 docker build时运行<br><br>两种格式<br><br>shell格式<br>RUN yum -y install vim<br>![](image/Pasted%20image%2020240208203143.png)<br>exec格式<br>![](image/Pasted%20image%2020240208203248.png)<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| EXPOSE     | 当前容器对外暴露出的端口                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| WORKDIR    | 指定在创建容器后，终端默认登陆的进来工作目录，一个落脚点<br><br>`docker run -it -p 8080:8080 \<imageID\> bash`<br>以交互打开 docker 容器后, 路径直接变为 Workdir 中给入的值<br><br>WORKDIR /usr/src/app  ,    /usr/src/app  这个是 这个 image 的 docker container 内部的路径,     docker run 的时候 就在这 路径下run<br>                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| USER       | 指定该镜像以什么样的用户去执行，如果都不指定，默认是root                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ENV        | 用来在构建镜像过程中设置环境变量<br><br>ENV MY_PATH /usr/mytest<br>这个环境变量可以在后续的在 dockerfile 中 任何RUN指令中使用，这就如同在命令前面指定了环境变量前缀一样；<br>也可以在其它指令中直接使用这些环境变量，<br>比如：WORKDIR $MY_PATH  <br><br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ADD        | 将宿主机目录下的文件拷贝进镜像, 且会自动处理URL和解压tar压缩包<br><br>ADD可以完全替代COPY的使用场景，但是如果不希望压缩文件自动解压，推荐使用COPY<br><br>add 的源文件可以是Dockerfile所在目录的一个相对路径；也可以是一个 URL；还可以是一个 tar 文件（自动解压为目录）                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| COPY       | <br>类似ADD，拷贝文件和目录到镜像中。 将从构建上下文目录中 <源路径> 的文件/目录复制到新的一层的镜像内的 <目标路径> 位置<br>·	COPY src dest<br>·	COPY ["src", "dest"]<br>·	<src源路径>：源文件或者源目录<br>·	<dest目标路径>：容器内的指定路径，该路径不用事先建好，路径不存在的话，会自动创建。<br><br>COPY Pipfile  ./  <br>COPY . .      第一个是 当前文件夹下的所有文件,  第二个. 是 docker 内部 下 workdir 中定义的路径 <br>                                                                                                                                                                                                                                                                                                                                                                       |
+| VOLUME     | 容器数据卷，用于数据保存和持久化工作<br><br>VOLUME ["volume1", "volume2"]<br>如果 之前 volume1 和 volume2 没有已经创建好, 则随着 image 的container 被生成, 会生成随机目录 volume01, volume02 <br><br>![](image/Pasted%20image%2020240210142851.png)<br><br>用  docker inspect `<containerID or name>` 查看 挂载的信息, 可以看出来  挂载的 容器外的目录的 的路径  , 他为 匿名目录 ,  目录的名字都是随机生成的 <br>![](image/Pasted%20image%2020240210143119.png)<br><br>                                                                                                                                                                                                                                                                                       |
+| CMD        | 指定容器启动后的要干的事情<br><br>![](image/Pasted%20image%2020240208203748.png)<br><br>==注意 Dockerfile 中可以有多个 CMD 指令，但只有最后一个生效，之前那些都不会被执行== <br>CMD 会被 docker run 之后的参数替换<br><br><br>它和前面RUN命令的区别<br>CMD是在docker run 时运行。<br>RUN是在 docker build时运行。<br><br>docker run -it xxx bin/bash <br>相当于 在 dockerfile 的最后一行 加上了 `CMD["bin/bash", "run"]`. 所以原本在 dockerfile 中定义的 最后一行的cmd 不会被执行了. <br><br>                                                                                                                                                                                                                                                                                   |
 | ENTRYPOINT | 在执行 docker build 的时候,  ENTRYPOINT中的内容会被自动执行 <br><br>也是用来指定一个容器启动时要运行的命令<br><br>![](image/Pasted%20image%2020240208204150.png)<br><br>![](image/Pasted%20image%2020240209105440.png)<br>上面相当于执行 java -jar zzyy_docker.jar <br><br>类似于 CMD 指令，但是ENTRYPOINT不会被docker run后面的命令覆盖， 而且这些命令行参数会被当作参数送给 ENTRYPOINT 指令指定的程序<br><br>在执行 docker run 的时候 可以指定 ENTRYPOINT 运行所需要的参数. <br>如果dockerfile 中 存在 多个 ENTRYPOint 指令, 仅最后一个生效<br><br>![](image/Pasted%20image%2020240208221209.png)<br><br><br>ENTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参。<br><br>当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成  `<ENTRYPOINT> <CMD>`<br> |
-|  |  |
+| ONBUILD    | 当构建一个被继承的Dockerfile时运行命令，父镜像在被子镜像继承后触发父镜像的onbuild                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| USER       | USER:指定运行容器时的用户名或 UID,当容器中运行的服务不需要管理员权限时，可以先建立一个特定的用户和用户组，为它分配必要的权限，使用 USER 切换到这个用户                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 
 参考官网Tomcat的dockerfile演示讲解 
@@ -76,37 +77,79 @@ Dockerfile面向开发，Docker镜像成为交付标准，Docker容器则涉及�
 我们演示自己的覆盖操作
 ![](image/Pasted%20image%2020240208203904.png)
 
-## 4.1 ENTRYPOINT  和 CMD 的不同
+## 4.1 例子 
+`
+```shell
+FROM python:3.12
+
+WORKDIR /usr/src/app
+
+RUN pip install pipenv
+COPY Pipfile ./
+RUN pipenv install
+
+COPY . .
+
+CMD [ "pipenv", "run", "python", "./main.py" ]
+```
+
+cmd 的例子 
+
+The `CMD ["pipenv", "run", "python", "main.py"]` command is typically found in a Dockerfile to specify the command to run when the Docker container starts. Here’s what each part of the command does:
+
+1. **CMD**: This Dockerfile instruction defines the default command to be executed when the container starts. Using `CMD` with an array syntax (`["..."]`) is preferred because it avoids issues with shell interpretation.
+    
+2. **pipenv run**: This part of the command uses `pipenv` to run a script or command within the virtual environment created by `pipenv`. It allows for using installed packages and dependencies in that environment.
+    
+3. **python**: This specifies that we want to use Python as the interpreter.
+    
+4. **main.py**: This is the script that will be executed when the container starts. Here, it’s assumed that `main.py` is the entry point for the application.
+
+
+## 4.2 ENTRYPOINT  和 CMD 的不同
+
+cmd给出的是一个容器的默认的可执行体。也就是容器启动以后，默认的执行的命令。
+其执行条件：
+（1）docker run没有指定任何的执行命令或者
+（2）dockerfile里面也没有entrypoint
+才会使用CMD内命令执行。entrypoint才是正统地用于定义容器启动以后的执行体的，其实我们从名字也可以理解，这个是容器的“入口”
 
 
 ![](image/Pasted%20image%2020240208204150.png)
 
 ENTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参。
 
-当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成  `<ENTRYPOINT> <CMD>`
+==当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成  `<ENTRYPOINT> <CMD>`==
 ![](image/Pasted%20image%2020240208204204.png)
 
-CMD写ls -a，docker run ls -l会按照ls -l执行，entrypoint写ls -a,docker run ls -l 会按照ls -al执行
 
+
+---
 
 案例如下：假设已通过 Dockerfile 构建了 nginx:test 镜像：
 ![](image/Pasted%20image%2020240208204213.png)
 
-|  |  |  |
-| ---- | ---- | ---- |
-| 是否传参 | 按照dockerfile编写执行 | 传参运行 |
-| Docker命令 | docker run  nginx:test | docker run  nginx:test -c /etc/nginx/new.conf |
-| 衍生出的实际命令 | nginx -c /etc/nginx/nginx.conf<br><br>如 上面那个截图中给出的  | nginx -c /etc/nginx/new.conf |
+|          |                                                                                  |                                                                                   |
+| -------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| 是否传参     | 按照dockerfile编写执行                                                                 | 传参运行                                                                              |
+| Docker命令 | docker run  nginx:test                                                           | docker run  nginx:test -c /etc/nginx/new.conf                                     |
+| 衍生出的实际命令 | docker run  nginx:test 实际的效果是 nginx -c /etc/nginx/nginx.conf<br><br>如 上面那个截图中给出的 | docker run  nginx:test -c /etc/nginx/new.conf 实际的效果是 nginx -c /etc/nginx/new.conf |
 
 优点: 在执行docker run的时候可以指定 ENTRYPOINT 运行所需的参数。
 注意:  如果 Dockerfile 中如果存在多个 ENTRYPOINT 指令，仅最后一个生效。
 
-## 4.2 
+## 4.3 
+
+
+CMD写ls -a，docker run ls -l会按照ls -l执行，entrypoint写ls -a,   docker run ls -l 会按照ls -al执行
+
+---
 
 cmd 的用法
+
 ![](image/Pasted%20image%2020240210230904.png)
 
-如果这个时候 运行 docker run ddxxxx -l, 则 dockerfile 中的 `CMD ["ls", "-a"]`  会被 -l 替换掉.  但是 有没有 -l 这样的命令, 所以会报错 
+如果这个时候 运行 docker run `<imagename>` -l, 则 dockerfile 中的 `CMD ["ls", "-a"]`  会被 -l 替换掉.  但是 有没有 -l 这样的命令, 所以会报错 
 
 ![](image/Pasted%20image%2020240210231432.png)
 
@@ -166,19 +209,34 @@ docker image prune -a清理无容器使用的镜像
 
 # 6 docker build 去使用 dockerfile
 
-例子: docker build -f Dockerfile-el8 -t rpm-builder-8:2.2 . 
+`docker build  [options] PATH|URL`
+
+
+option
+--build-arg，设置构建时的环境变量
+--no-cache，默认false。设置该选项，将不使用Build Cache构建镜像
+--pull，默认false。设置该选项，总是尝试pull镜像的最新版本
+--compress，默认false。设置该选项，将使用gzip压缩构建的上下文
+--file, -f，Dockerfile的完整路径，默认值为‘PATH/Dockerfile’
+--label，为生成的镜像设置metadata
+--tag, -t，镜像的名字及tag，通常name:tag或者name格式；可以在一次构建中为一个镜像设置多个tag
+--network，默认default。设置该选项，Set the networking mode for the RUN instructions during build
+
+	PATH | URL 
+给出命令执行的上下文（位于指定 PATH 或 URL 中的一组文件）。上下文可以是构建执行所在的本地路径PATH，也可以是远程URL，如Git库、文本文件等。在 dockerfile 中写的文件路径都会以这个上下文开始找。
+
+## 6.1 例子
+docker build -f Dockerfile-el8 -t rpm-builder-8:2.2 . 
 
 上面代码中，-t参数用来指定 image 文件的名字，后面还可以用冒号指定标签。如果不指定，默认的标签就是latest。
  最后的那个点表示 Dockerfile 文件所在的路径，上例是当前路径，所以是一个点。
 
 生成的 image 就放在了当前目录下 
 
-
 | .<br><br>Build with PATH | docker build .<br><br>将当前目录的所有文件 都 打包这个 一个 docker image<br><br>This example specifies that the PATH is ., and so all the files in the local directory get tard and sent to the Docker daemon.<br><br>The PATH specifies where to find the files for the “context” of the build on the Docker daemon.<br><br>Remember that the daemon could be running on a remote machine and that no parsing of the Dockerfile happens at the client side (where you’re running docker build). That means that all the files at PATH get sent, not just the ones listed to ADD in the Dockerfile. |
 | ---- | ---- |
 | Tag an image (-t, --tag) | 给这个 生成的 image 起名为 rpm-builder-8<br><br> docker build -t vieux/apache:2.0 .<br><br>->  The repository name will be vieux/apache and the tag will be 2.0. |
 | Specify a Dockerfile (-f, --file) | 使用 那个 dockerfile |
-
 
 # 7 docker history imageid
 
@@ -323,5 +381,4 @@ docker run -d -p 6001:6001 zzyy_docker:1.6
 ## 8.4 tomcat 镜像
 
 ![](image/Pasted%20image%2020240210234023.png)
-
 
